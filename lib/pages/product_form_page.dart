@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../models/product.dart';
+import '../models/product_list.dart';
 
 class ProductFormPage extends StatefulWidget {
   const ProductFormPage({super.key});
@@ -24,6 +28,24 @@ class _ProductFormPageState extends State<ProductFormPage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_formData.isEmpty) {
+      final arg = ModalRoute.of(context)?.settings.arguments;
+      if (arg != null) {
+        final product = arg as Product;
+        _formData['id'] = product.id;
+        _formData['name'] = product.name;
+        _formData['description'] = product.description;
+        _formData['price'] = product.price;
+        _formData['image'] = product.imageUrl;
+
+        _imageController.text = product.imageUrl;
+      }
+    }
+  }
+
+  @override
   void initState() {
     super.initState();
     _imageFocus.addListener((updateImage));
@@ -46,6 +68,9 @@ class _ProductFormPageState extends State<ProductFormPage> {
 
     if (isValid) {
       _formKey.currentState?.save();
+      Navigator.of(context).pop();
+      Provider.of<ProductList>(context, listen: false)
+          .saveProductFromData(_formData);
     } else {
       return;
     }
@@ -67,6 +92,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
           child: ListView(
             children: [
               TextFormField(
+                initialValue: _formData['name']?.toString(),
                 decoration: const InputDecoration(
                   labelText: 'Nome',
                 ),
@@ -86,6 +112,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                 textInputAction: TextInputAction.next,
               ),
               TextFormField(
+                initialValue: _formData['price']?.toString(),
                 decoration: const InputDecoration(
                   labelText: 'Preço',
                 ),
@@ -106,6 +133,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                 textInputAction: TextInputAction.next,
               ),
               TextFormField(
+                initialValue: _formData['description']?.toString(),
                 decoration: const InputDecoration(
                   labelText: 'Descrição',
                 ),
